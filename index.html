@@ -69,13 +69,13 @@
 
   <main class="max-w-6xl mx-auto p-4 space-y-4">
     
-    <!-- ================= TAB 1: USER VERIFICATION ================= -->
+    <!-- ================= TAB 1: USER VERIFICATION & REWARDS ================= -->
     <section id="panel-users" class="space-y-3">
       <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 space-y-3">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b pb-3">
           <div>
-            <h3 class="text-sm font-bold text-gray-900">पंजीकृत यूज़र्स व रिपोर्टर्स (User Verification)</h3>
-            <p class="text-[11px] text-gray-500">यहाँ से यूजर को वेरिफाई करें ताकि ऐप में उसके भावों से 'अन-वेरिफाइड यूजर' का टैग हट जाए।</p>
+            <h3 class="text-sm font-bold text-gray-900">पंजीकृत यूज़र्स, सत्यापन व रिवॉर्ड्स</h3>
+            <p class="text-[11px] text-gray-500">यूजर को वेरिफाई करें ताकि उसके भावों से 'अन-वेरिफाइड' टैग हटे और उसे बोनस कॉइन्स दें।</p>
           </div>
           <button onclick="loadUsers()" class="self-start sm:self-auto bg-emerald-50 text-emerald-800 border border-emerald-200 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-emerald-100">
             🔄 रीफ्रेश लिस्ट
@@ -88,14 +88,15 @@
               <tr>
                 <th class="p-2.5 whitespace-nowrap">नाम</th>
                 <th class="p-2.5 whitespace-nowrap">मोबाइल</th>
-                <th class="p-2.5 whitespace-nowrap">श्रेणी (Category)</th>
+                <th class="p-2.5 whitespace-nowrap">श्रेणी</th>
                 <th class="p-2.5 whitespace-nowrap">मंडी / फर्म</th>
-                <th class="p-2.5 whitespace-nowrap">सत्यापन स्थिति</th>
+                <th class="p-2.5 whitespace-nowrap">कॉइन्स व स्ट्रीक</th>
+                <th class="p-2.5 whitespace-nowrap">स्थिति</th>
                 <th class="p-2.5 whitespace-nowrap text-right">एक्शन</th>
               </tr>
             </thead>
             <tbody id="usersTbody" class="divide-y divide-gray-100">
-              <tr><td colspan="6" class="p-4 text-center text-gray-400">यूजर लोड हो रहे हैं...</td></tr>
+              <tr><td colspan="7" class="p-4 text-center text-gray-400">यूजर लोड हो रहे हैं...</td></tr>
             </tbody>
           </table>
         </div>
@@ -121,11 +122,10 @@
 
     <!-- ================= TAB 3: MASTER DATA ADD ================= -->
     <section id="panel-master" class="hidden grid grid-cols-1 md:grid-cols-2 gap-4">
-      <!-- Add Mandi -->
       <div class="bg-white p-4 rounded-xl shadow-sm border space-y-3">
         <div class="border-b pb-2">
           <h4 class="text-xs font-bold text-gray-900 uppercase">➕ नई मंडी जोड़ें</h4>
-          <p class="text-[10px] text-gray-400">ऐप के सभी ड्रॉपडाउन में तुरंत दिखने लगेगी</p>
+          <p class="text-[10px] text-gray-400">ऐप के सभी ड्रॉपडाउन में तुरंत दिखेगी</p>
         </div>
         <form onsubmit="addMandiSubmit(event)" class="space-y-2.5 text-xs">
           <div>
@@ -149,7 +149,6 @@
         </form>
       </div>
 
-      <!-- Add Crop -->
       <div class="bg-white p-4 rounded-xl shadow-sm border space-y-3">
         <div class="border-b pb-2">
           <h4 class="text-xs font-bold text-gray-900 uppercase">➕ नई फसल जोड़ें</h4>
@@ -179,7 +178,7 @@
     </section>
   </main>
 
-  <!-- ================= 4. RATE EDIT MODAL (गलत भाव सुधार विंडो) ================= -->
+  <!-- ================= 4. RATE EDIT MODAL ================= -->
   <div id="rateEditModal" class="fixed inset-0 bg-black/70 z-50 hidden flex items-center justify-center p-4">
     <div class="bg-white w-full max-w-md p-5 rounded-2xl shadow-2xl space-y-3 text-xs">
       <div class="flex justify-between items-center border-b pb-2">
@@ -244,13 +243,12 @@
     </div>
   </div>
 
-  <!-- ================= 5. MASTER ENGINE SCRIPT ================= -->
+  <!-- ================= 5. MASTER SCRIPT ENGINE ================= -->
   <script>
-    // Turso Database Credentials
     const TURSO_URL = "https://mpmandi-govindaala.aws-ap-south-1.turso.io/v2/pipeline";
     const TURSO_TOKEN = "eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJhIjoicnciLCJpYXQiOjE3ODk2MTQwMzksImlkIjoiMDFhMGFkNGUtZDEwMS03M2ViLTlhMjEtZDA3MWIyNDU1MmJiIiwia2lkIjoiV0JkNlJ2dHFndUYtOHV1R2tnT0xSWWREU0lCaGVOem8xVy1QNXhBWkNVVSIsInJpZCI6IjdjY2JmYTI2LWNiYTgtNGUxOS04Njc3LWU0YTdlMGVhYTRmMyJ9.rtHnUY5poOSfygQDiQnHUDYNMZXpaMZoqEJnwy6YmIbWeAVdvIZbhfOXLgAPhS4kMEuGWtFL2Smpgo5rt6VXAQ";
 
-    const MASTER_PIN = "1234"; // आप यहाँ अपना मनपसंद पिन रख सकते हैं
+    const MASTER_PIN = "1234";
 
     async function sqlQuery(sql) {
       try {
@@ -287,7 +285,6 @@
     let allUsers = [];
     let allRates = [];
 
-    // Master PIN Check
     function handleMasterLogin(e) {
       e.preventDefault();
       const p = document.getElementById("inputMasterPin").value;
@@ -296,7 +293,7 @@
         loadUsers();
         loadRates();
       } else {
-        alert("❌ गलत मास्टर पिन! कृपया सही पिन डालें।");
+        alert("❌ गलत मास्टर पिन!");
       }
     }
 
@@ -305,7 +302,6 @@
       document.getElementById("inputMasterPin").value = "";
     }
 
-    // Tabs
     function switchTab(t) {
       ['users', 'rates', 'master'].forEach(tab => {
         const btn = document.getElementById(`tab-btn-${tab}`);
@@ -322,7 +318,7 @@
       if (t === 'rates') loadRates();
     }
 
-    // ================= 1. USER VERIFICATION LOGIC =================
+    // ================= 1. USER VERIFICATION & REWARDS LOGIC =================
     async function loadUsers() {
       allUsers = await sqlQuery("SELECT * FROM users ORDER BY id DESC;");
       const unverified = allUsers.filter(u => u.is_verified == 0);
@@ -330,12 +326,15 @@
 
       const tbody = document.getElementById("usersTbody");
       if (allUsers.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-gray-400">कोई पंजीकृत यूजर नहीं है।</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-gray-400">कोई पंजीकृत यूजर नहीं है।</td></tr>`;
         return;
       }
 
       tbody.innerHTML = allUsers.map(u => {
         const isVer = (u.is_verified == 1);
+        const pts = u.reward_points || 0;
+        const streak = u.streak_count || 1;
+
         return `
           <tr class="hover:bg-gray-50 transition">
             <td class="p-2.5 font-bold text-gray-900">${u.name}</td>
@@ -345,32 +344,47 @@
             </td>
             <td class="p-2.5 text-gray-600">${u.mandi_name || '-'}</td>
             <td class="p-2.5">
+              <span class="bg-amber-100 text-amber-900 font-bold px-1.5 py-0.5 rounded border border-amber-300">🪙 ${pts}</span>
+              <span class="bg-red-50 text-red-700 font-bold px-1.5 py-0.5 rounded border border-red-200 ml-1">🔥 ${streak}d</span>
+            </td>
+            <td class="p-2.5">
               ${isVer 
                 ? `<span class="bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded text-[10px]">✓ वेरिफाइड</span>` 
                 : `<span class="bg-amber-100 text-amber-900 font-bold px-2 py-0.5 rounded text-[10px] border border-amber-300">⚠️ अन-वेरिफाइड</span>`
               }
             </td>
-            <td class="p-2.5 text-right flex justify-end gap-1.5">
+            <td class="p-2.5 text-right flex justify-end items-center gap-1.5">
+              <button onclick="giveBonusCoins(${u.id}, ${pts})" title="प्रोत्साहन बोनस दें" class="bg-amber-50 text-amber-800 border border-amber-300 px-2 py-1 rounded font-bold hover:bg-amber-100">
+                +100 🪙
+              </button>
               ${isVer ? `
-                <button onclick="toggleVerify(${u.id}, 0)" class="bg-amber-50 text-amber-800 border border-amber-200 px-2.5 py-1 rounded font-bold hover:bg-amber-100">
-                  हटाएं (Unverify)
+                <button onclick="toggleVerify(${u.id}, 0)" class="bg-gray-100 text-gray-700 border border-gray-300 px-2 py-1 rounded font-bold hover:bg-gray-200">
+                  हटाएं
                 </button>
               ` : `
-                <button onclick="toggleVerify(${u.id}, 1)" class="bg-emerald-700 text-white px-3 py-1 rounded font-bold hover:bg-emerald-800 shadow">
-                  ✓ वेरिफाई करें
+                <button onclick="toggleVerify(${u.id}, 1)" class="bg-emerald-700 text-white px-2.5 py-1 rounded font-bold hover:bg-emerald-800 shadow">
+                  ✓ वेरिफाई
                 </button>
               `}
-              <button onclick="deleteUserRow(${u.id})" class="text-red-500 hover:text-red-700 font-bold px-1.5">🗑️</button>
+              <button onclick="deleteUserRow(${u.id})" class="text-red-500 hover:text-red-700 font-bold px-1">🗑️</button>
             </td>
           </tr>
         `;
       }).join("");
     }
 
+    window.giveBonusCoins = async function(userId, currentPts) {
+      const bonus = 100;
+      const newTotal = (parseInt(currentPts) || 0) + bonus;
+      await sqlQuery(`UPDATE users SET reward_points = ${newTotal} WHERE id = ${userId};`);
+      alert(`🎉 यूजर के खाते में +${bonus} विशेष प्रोत्साहन कॉइन्स जोड़ दिए गए हैं!`);
+      await loadUsers();
+    };
+
     async function toggleVerify(id, status) {
       await sqlQuery(`UPDATE users SET is_verified = ${status} WHERE id = ${id};`);
       await loadUsers();
-      alert(status === 1 ? "✅ यूजर वेरिफाई हो गया! अब पब्लिक ऐप में इसके सभी भावों से 'अन-वेरिफाइड' टैग हट चुका है।" : "⚠️ यूजर को अन-वेरिफाइड कर दिया गया।");
+      alert(status === 1 ? "✅ यूजर वेरिफाई हो गया! अब पब्लिक ऐप में इसके सभी भावों से 'अन-वेरिफाइड यूजर' का टैग हट चुका है।" : "⚠️ यूजर को अन-वेरिफाइड कर दिया गया।");
     }
 
     async function deleteUserRow(id) {
@@ -449,7 +463,6 @@
       }).join("");
     }
 
-    // Modal Edit
     function openEditModal(id) {
       const r = allRates.find(x => x.id == id);
       if (!r) return;
@@ -513,7 +526,7 @@
       const n = document.getElementById("newCropName").value.trim();
       const c = document.getElementById("newCropCategory").value;
       await sqlQuery(`INSERT INTO commodities (name_hi, category) VALUES ('${n}', '${c}');`);
-      alert(`✅ फसल '${n}' जुड़ गई!`);
+      alert(`✅ फसल '${n}' सफलतापूर्वक जुड़ गई!`);
       e.target.reset();
     }
   </script>
