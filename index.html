@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>मंडी भाव — सुपर एडमिन पैनल</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { -webkit-tap-highlight-color: transparent; }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  </style>
+</head>
+<body class="bg-gray-100 text-gray-900 font-sans pb-16 select-none">
+
+  <!-- ================= 1. MASTER PIN LOCK SCREEN ================= -->
+  <div id="adminPinScreen" class="fixed inset-0 bg-emerald-950 z-50 flex items-center justify-center p-4">
+    <div class="bg-white w-full max-w-sm p-6 rounded-2xl shadow-2xl space-y-4 text-center">
+      <div class="w-16 h-16 bg-emerald-100 text-emerald-800 rounded-full flex items-center justify-center mx-auto text-3xl font-bold shadow-inner">
+        🛡️
+      </div>
+      <div>
+        <h2 class="text-xl font-black text-gray-900">सुपर एडमिन कंट्रोल</h2>
+        <p class="text-xs text-gray-500 mt-1">MP & राजस्थान मंडी नेटवर्क डेटाबेस</p>
+      </div>
+
+      <form onsubmit="handleMasterLogin(event)" class="space-y-3 text-left">
+        <div>
+          <label class="text-xs font-semibold text-gray-600 block">मास्टर एडमिन पिन (Master PIN)</label>
+          <input type="password" id="inputMasterPin" placeholder="••••" maxlength="6" required 
+            class="w-full mt-1.5 p-3 bg-gray-50 border rounded-xl text-center text-xl font-mono tracking-widest outline-none focus:border-emerald-700 focus:bg-white transition" />
+          <p class="text-[10px] text-gray-400 mt-1 text-center">डिफ़ॉल्ट मास्टर पिन: <strong>1234</strong></p>
+        </div>
+        <button type="submit" class="w-full bg-emerald-800 hover:bg-emerald-900 text-white font-bold py-3 rounded-xl shadow-md text-sm transition">
+          एडमिन पैनल में प्रवेश करें ➔
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= 2. ADMIN HEADER ================= -->
+  <header class="bg-emerald-900 text-white sticky top-0 z-40 shadow-md">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center">
+      <div class="flex items-center gap-2">
+        <span class="text-2xl">🛡️</span>
+        <div>
+          <h1 class="text-base font-black leading-tight">मंडी भाव दर्पण — सुपर एडमिन</h1>
+          <p class="text-[10px] text-emerald-200">Turso Live Database Control</p>
+        </div>
+      </div>
+      <button onclick="logoutAdmin()" class="text-xs bg-emerald-800 hover:bg-red-700 px-3 py-1.5 rounded-lg font-bold border border-emerald-700 transition shadow-sm">
+        लॉगआउट
+      </button>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="max-w-6xl mx-auto px-4 flex gap-2 border-t border-emerald-800/80 pt-2 pb-2 text-xs overflow-x-auto no-scrollbar">
+      <button onclick="switchTab('users')" id="tab-btn-users" class="px-3.5 py-1.5 rounded-lg bg-white text-emerald-900 font-bold shadow whitespace-nowrap">
+        👥 यूजर सत्यापन (<span id="badgeUnverified" class="text-red-600 font-black">0</span> लंबित)
+      </button>
+      <button onclick="switchTab('rates')" id="tab-btn-rates" class="px-3.5 py-1.5 rounded-lg text-emerald-100 font-medium whitespace-nowrap">
+        📊 लाइव भाव सुधार (<span id="badgeTotalRates">0</span>)
+      </button>
+      <button onclick="switchTab('master')" id="tab-btn-master" class="px-3.5 py-1.5 rounded-lg text-emerald-100 font-medium whitespace-nowrap">
+        ➕ मंडी / फसल मास्टर
+      </button>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto p-4 space-y-4">
+    
+    <!-- ================= TAB 1: USER VERIFICATION ================= -->
+    <section id="panel-users" class="space-y-3">
+      <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 space-y-3">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b pb-3">
+          <div>
+            <h3 class="text-sm font-bold text-gray-900">पंजीकृत यूज़र्स व रिपोर्टर्स (User Verification)</h3>
+            <p class="text-[11px] text-gray-500">यहाँ से यूजर को वेरिफाई करें ताकि ऐप में उसके भावों से 'अन-वेरिफाइड यूजर' का टैग हट जाए।</p>
+          </div>
+          <button onclick="loadUsers()" class="self-start sm:self-auto bg-emerald-50 text-emerald-800 border border-emerald-200 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-emerald-100">
+            🔄 रीफ्रेश लिस्ट
+          </button>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-xs text-left">
+            <thead class="bg-gray-50 text-gray-600 font-semibold border-b">
+              <tr>
+                <th class="p-2.5 whitespace-nowrap">नाम</th>
+                <th class="p-2.5 whitespace-nowrap">मोबाइल</th>
+                <th class="p-2.5 whitespace-nowrap">श्रेणी (Category)</th>
+                <th class="p-2.5 whitespace-nowrap">मंडी / फर्म</th>
+                <th class="p-2.5 whitespace-nowrap">सत्यापन स्थिति</th>
+                <th class="p-2.5 whitespace-nowrap text-right">एक्शन</th>
+              </tr>
+            </thead>
+            <tbody id="usersTbody" class="divide-y divide-gray-100">
+              <tr><td colspan="6" class="p-4 text-center text-gray-400">यूजर लोड हो रहे हैं...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= TAB 2: LIVE RATES MODERATION / EDIT ================= -->
+    <section id="panel-rates" class="hidden space-y-3">
+      <div class="bg-white p-3 rounded-xl shadow-sm border flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+        <div class="flex items-center gap-2">
+          <span class="font-bold text-gray-800">कुल प्रकाशित भाव: <strong id="ratesCountDisplay" class="text-emerald-800 text-sm">0</strong></span>
+          <span class="text-gray-400">|</span>
+          <input type="text" id="adminSearchInput" oninput="filterAdminRates()" placeholder="फसल, मंडी या रिपोर्टर खोजें..." 
+            class="p-1.5 bg-gray-50 border rounded-lg outline-none w-52 text-xs" />
+        </div>
+        <button onclick="loadRates()" class="text-emerald-800 font-bold hover:underline self-start sm:self-auto">🔄 ताज़ा करें</button>
+      </div>
+
+      <div id="adminRatesContainer" class="space-y-2.5">
+        <div class="text-center py-12 text-gray-400 text-xs">भाव लोड हो रहे हैं...</div>
+      </div>
+    </section>
+
+    <!-- ================= TAB 3: MASTER DATA ADD ================= -->
+    <section id="panel-master" class="hidden grid grid-cols-1 md:grid-cols-2 gap-4">
+      <!-- Add Mandi -->
+      <div class="bg-white p-4 rounded-xl shadow-sm border space-y-3">
+        <div class="border-b pb-2">
+          <h4 class="text-xs font-bold text-gray-900 uppercase">➕ नई मंडी जोड़ें</h4>
+          <p class="text-[10px] text-gray-400">ऐप के सभी ड्रॉपडाउन में तुरंत दिखने लगेगी</p>
+        </div>
+        <form onsubmit="addMandiSubmit(event)" class="space-y-2.5 text-xs">
+          <div>
+            <label class="font-semibold text-gray-600">मंडी का नाम</label>
+            <input type="text" id="newMandiName" placeholder="उदा. जावरा" required class="w-full mt-1 p-2 bg-gray-50 border rounded-lg" />
+          </div>
+          <div>
+            <label class="font-semibold text-gray-600">जिला</label>
+            <input type="text" id="newMandiDistrict" placeholder="उदा. रतलाम" required class="w-full mt-1 p-2 bg-gray-50 border rounded-lg" />
+          </div>
+          <div>
+            <label class="font-semibold text-gray-600">राज्य</label>
+            <select id="newMandiState" class="w-full mt-1 p-2 bg-gray-50 border rounded-lg font-medium">
+              <option value="मध्य प्रदेश">मध्य प्रदेश</option>
+              <option value="राजस्थान">राजस्थान</option>
+            </select>
+          </div>
+          <button type="submit" class="w-full bg-emerald-800 text-white font-bold py-2.5 rounded-lg shadow">
+            मंडी सुरक्षित करें
+          </button>
+        </form>
+      </div>
+
+      <!-- Add Crop -->
+      <div class="bg-white p-4 rounded-xl shadow-sm border space-y-3">
+        <div class="border-b pb-2">
+          <h4 class="text-xs font-bold text-gray-900 uppercase">➕ नई फसल जोड़ें</h4>
+          <p class="text-[10px] text-gray-400">हजारों फसलें जोड़ सकते हैं</p>
+        </div>
+        <form onsubmit="addCropSubmit(event)" class="space-y-2.5 text-xs">
+          <div>
+            <label class="font-semibold text-gray-600">फसल का नाम (हिंदी)</label>
+            <input type="text" id="newCropName" placeholder="उदा. इसबगोल, कलोंजी" required class="w-full mt-1 p-2 bg-gray-50 border rounded-lg" />
+          </div>
+          <div>
+            <label class="font-semibold text-gray-600">श्रेणी (Category)</label>
+            <select id="newCropCategory" class="w-full mt-1 p-2 bg-gray-50 border rounded-lg font-medium">
+              <option value="तिलहन">तिलहन</option>
+              <option value="अनाज">अनाज</option>
+              <option value="मसाला">मसाला</option>
+              <option value="दलहन">दलहन</option>
+              <option value="सब्जी">सब्जी</option>
+              <option value="अन्य">अन्य</option>
+            </select>
+          </div>
+          <button type="submit" class="w-full bg-emerald-800 text-white font-bold py-2.5 rounded-lg shadow">
+            फसल सुरक्षित करें
+          </button>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <!-- ================= 4. RATE EDIT MODAL (गलत भाव सुधार विंडो) ================= -->
+  <div id="rateEditModal" class="fixed inset-0 bg-black/70 z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white w-full max-w-md p-5 rounded-2xl shadow-2xl space-y-3 text-xs">
+      <div class="flex justify-between items-center border-b pb-2">
+        <h3 class="text-sm font-bold text-gray-900">✏️ भाव सुधारें (Edit Rate)</h3>
+        <button onclick="closeEditModal()" class="text-gray-400 font-bold text-lg hover:text-black">&times;</button>
+      </div>
+
+      <form onsubmit="saveEditedRate(event)" class="space-y-2.5">
+        <input type="hidden" id="modalRateId" />
+
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="font-semibold text-gray-600">फसल</label>
+            <input type="text" id="modalCrop" readonly class="w-full mt-1 p-2 bg-gray-100 border rounded-lg font-bold text-gray-700" />
+          </div>
+          <div>
+            <label class="font-semibold text-gray-600">मंडी</label>
+            <input type="text" id="modalMandi" readonly class="w-full mt-1 p-2 bg-gray-100 border rounded-lg font-bold text-gray-700" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-2">
+          <div>
+            <label class="font-semibold text-gray-600">न्यूनतम (₹)</label>
+            <input type="number" id="modalMin" required class="w-full mt-1 p-2 bg-gray-50 border rounded-lg font-bold text-gray-800" />
+          </div>
+          <div>
+            <label class="font-bold text-emerald-800">मॉडल भाव (₹)</label>
+            <input type="number" id="modalModal" required class="w-full mt-1 p-2 bg-emerald-50 border border-emerald-400 rounded-lg font-black text-emerald-800" />
+          </div>
+          <div>
+            <label class="font-semibold text-gray-600">अधिकतम (₹)</label>
+            <input type="number" id="modalMax" required class="w-full mt-1 p-2 bg-gray-50 border rounded-lg font-bold text-gray-800" />
+          </div>
+        </div>
+
+        <div>
+          <label class="font-semibold text-gray-600">क्वालिटी / मानक / टिप्पणी</label>
+          <input type="text" id="modalQuality" class="w-full mt-1 p-2 bg-gray-50 border rounded-lg" />
+        </div>
+
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="font-semibold text-gray-600">आवक (बोरी)</label>
+            <input type="number" id="modalArrival" class="w-full mt-1 p-2 bg-gray-50 border rounded-lg" />
+          </div>
+          <div>
+            <label class="font-semibold text-gray-600">तारीख</label>
+            <input type="date" id="modalDate" required class="w-full mt-1 p-2 bg-gray-50 border rounded-lg font-mono" />
+          </div>
+        </div>
+
+        <div class="flex gap-2 pt-2">
+          <button type="submit" class="flex-1 bg-emerald-800 hover:bg-emerald-900 text-white font-bold py-2.5 rounded-xl shadow transition">
+            ✓ सुधार सेव करें
+          </button>
+          <button type="button" onclick="closeEditModal()" class="bg-gray-200 text-gray-700 font-medium px-4 py-2.5 rounded-xl">
+            रद्द करें
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= 5. MASTER ENGINE SCRIPT ================= -->
+  <script>
+    // Turso Database Credentials
+    const TURSO_URL = "https://mpmandi-govindaala.aws-ap-south-1.turso.io/v2/pipeline";
+    const TURSO_TOKEN = "eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJhIjoicnciLCJpYXQiOjE3ODk2MTQwMzksImlkIjoiMDFhMGFkNGUtZDEwMS03M2ViLTlhMjEtZDA3MWIyNDU1MmJiIiwia2lkIjoiV0JkNlJ2dHFndUYtOHV1R2tnT0xSWWREU0lCaGVOem8xVy1QNXhBWkNVVSIsInJpZCI6IjdjY2JmYTI2LWNiYTgtNGUxOS04Njc3LWU0YTdlMGVhYTRmMyJ9.rtHnUY5poOSfygQDiQnHUDYNMZXpaMZoqEJnwy6YmIbWeAVdvIZbhfOXLgAPhS4kMEuGWtFL2Smpgo5rt6VXAQ";
+
+    const MASTER_PIN = "1234"; // आप यहाँ अपना मनपसंद पिन रख सकते हैं
+
+    async function sqlQuery(sql) {
+      try {
+        const res = await fetch(TURSO_URL, {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${TURSO_TOKEN}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            requests: [
+              { type: "execute", stmt: { sql } },
+              { type: "close" }
+            ]
+          })
+        });
+        const data = await res.json();
+        if (data.results && data.results[0] && data.results[0].type === "ok") {
+          const r = data.results[0].response.result;
+          const cols = r.cols.map(c => c.name);
+          return r.rows.map(row => {
+            const obj = {};
+            row.forEach((cell, i) => { obj[cols[i]] = cell.value; });
+            return obj;
+          });
+        }
+        return [];
+      } catch (err) {
+        console.error("Turso SQL Error:", err);
+        return [];
+      }
+    }
+
+    let allUsers = [];
+    let allRates = [];
+
+    // Master PIN Check
+    function handleMasterLogin(e) {
+      e.preventDefault();
+      const p = document.getElementById("inputMasterPin").value;
+      if (p === MASTER_PIN) {
+        document.getElementById("adminPinScreen").classList.add("hidden");
+        loadUsers();
+        loadRates();
+      } else {
+        alert("❌ गलत मास्टर पिन! कृपया सही पिन डालें।");
+      }
+    }
+
+    function logoutAdmin() {
+      document.getElementById("adminPinScreen").classList.remove("hidden");
+      document.getElementById("inputMasterPin").value = "";
+    }
+
+    // Tabs
+    function switchTab(t) {
+      ['users', 'rates', 'master'].forEach(tab => {
+        const btn = document.getElementById(`tab-btn-${tab}`);
+        btn.className = (tab === t) 
+          ? "px-3.5 py-1.5 rounded-lg bg-white text-emerald-900 font-bold shadow whitespace-nowrap" 
+          : "px-3.5 py-1.5 rounded-lg text-emerald-100 font-medium whitespace-nowrap";
+      });
+
+      document.getElementById("panel-users").classList.toggle("hidden", t !== 'users');
+      document.getElementById("panel-rates").classList.toggle("hidden", t !== 'rates');
+      document.getElementById("panel-master").classList.toggle("hidden", t !== 'master');
+
+      if (t === 'users') loadUsers();
+      if (t === 'rates') loadRates();
+    }
+
+    // ================= 1. USER VERIFICATION LOGIC =================
+    async function loadUsers() {
+      allUsers = await sqlQuery("SELECT * FROM users ORDER BY id DESC;");
+      const unverified = allUsers.filter(u => u.is_verified == 0);
+      document.getElementById("badgeUnverified").innerText = unverified.length;
+
+      const tbody = document.getElementById("usersTbody");
+      if (allUsers.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-gray-400">कोई पंजीकृत यूजर नहीं है।</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = allUsers.map(u => {
+        const isVer = (u.is_verified == 1);
+        return `
+          <tr class="hover:bg-gray-50 transition">
+            <td class="p-2.5 font-bold text-gray-900">${u.name}</td>
+            <td class="p-2.5 font-mono text-gray-600">${u.phone}</td>
+            <td class="p-2.5">
+              <span class="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded font-bold">${u.role}</span>
+            </td>
+            <td class="p-2.5 text-gray-600">${u.mandi_name || '-'}</td>
+            <td class="p-2.5">
+              ${isVer 
+                ? `<span class="bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded text-[10px]">✓ वेरिफाइड</span>` 
+                : `<span class="bg-amber-100 text-amber-900 font-bold px-2 py-0.5 rounded text-[10px] border border-amber-300">⚠️ अन-वेरिफाइड</span>`
+              }
+            </td>
+            <td class="p-2.5 text-right flex justify-end gap-1.5">
+              ${isVer ? `
+                <button onclick="toggleVerify(${u.id}, 0)" class="bg-amber-50 text-amber-800 border border-amber-200 px-2.5 py-1 rounded font-bold hover:bg-amber-100">
+                  हटाएं (Unverify)
+                </button>
+              ` : `
+                <button onclick="toggleVerify(${u.id}, 1)" class="bg-emerald-700 text-white px-3 py-1 rounded font-bold hover:bg-emerald-800 shadow">
+                  ✓ वेरिफाई करें
+                </button>
+              `}
+              <button onclick="deleteUserRow(${u.id})" class="text-red-500 hover:text-red-700 font-bold px-1.5">🗑️</button>
+            </td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    async function toggleVerify(id, status) {
+      await sqlQuery(`UPDATE users SET is_verified = ${status} WHERE id = ${id};`);
+      await loadUsers();
+      alert(status === 1 ? "✅ यूजर वेरिफाई हो गया! अब पब्लिक ऐप में इसके सभी भावों से 'अन-वेरिफाइड' टैग हट चुका है।" : "⚠️ यूजर को अन-वेरिफाइड कर दिया गया।");
+    }
+
+    async function deleteUserRow(id) {
+      if (!confirm("क्या आप वाकई इस यूजर को हटाना चाहते हैं?")) return;
+      await sqlQuery(`DELETE FROM users WHERE id = ${id};`);
+      loadUsers();
+    }
+
+    // ================= 2. LIVE RATES & INLINE EDIT =================
+    async function loadRates() {
+      allRates = await sqlQuery(`
+        SELECT p.*, 
+               COALESCE(m.name, 'मंडी') as mandi_name, 
+               COALESCE(c.name_hi, 'फसल') as crop_name,
+               COALESCE(u.is_verified, 0) as user_verified
+        FROM price_records p
+        LEFT JOIN mandis m ON p.mandi_id = m.id
+        LEFT JOIN commodities c ON p.commodity_id = c.id
+        LEFT JOIN users u ON p.user_phone = u.phone
+        ORDER BY p.id DESC LIMIT 300;
+      `);
+
+      document.getElementById("badgeTotalRates").innerText = allRates.length;
+      document.getElementById("ratesCountDisplay").innerText = allRates.length;
+      renderAdminRates(allRates);
+    }
+
+    function filterAdminRates() {
+      const q = document.getElementById("adminSearchInput").value.trim().toLowerCase();
+      const filtered = allRates.filter(r => 
+        (r.crop_name && r.crop_name.toLowerCase().includes(q)) ||
+        (r.mandi_name && r.mandi_name.toLowerCase().includes(q)) ||
+        (r.submitted_by && r.submitted_by.toLowerCase().includes(q)) ||
+        (r.firm_name && r.firm_name.toLowerCase().includes(q))
+      );
+      renderAdminRates(filtered);
+    }
+
+    function renderAdminRates(list) {
+      const container = document.getElementById("adminRatesContainer");
+      if (list.length === 0) {
+        container.innerHTML = `<div class="bg-white p-8 rounded-xl text-center text-xs text-gray-400">कोई भाव रिकॉर्ड नहीं मिला।</div>`;
+        return;
+      }
+
+      container.innerHTML = list.map(r => {
+        const isUnverified = (r.user_verified == 0) && r.submitted_by;
+        return `
+          <div class="bg-white p-3.5 rounded-xl shadow-sm border border-gray-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+            <div>
+              <div class="flex items-center gap-1.5 flex-wrap">
+                <strong class="text-sm font-black text-gray-900">${r.crop_name}</strong>
+                <span class="bg-gray-100 text-gray-700 px-1.5 py-0.5 rounded font-bold">${r.mandi_name}</span>
+                <span class="text-gray-400 font-mono">${r.price_date}</span>
+                ${isUnverified ? `<span class="bg-amber-100 text-amber-900 border border-amber-300 font-bold px-1.5 py-0.2 rounded text-[9px]">⚠️ अन-वेरिफाइड यूजर</span>` : ''}
+              </div>
+              <p class="text-gray-700 mt-1">
+                रेंज: <strong>₹${r.price_min} - ₹${r.price_max}</strong> | मॉडल: <strong class="text-emerald-800 font-black">₹${r.price_modal}</strong> | आवक: <strong>${r.arrival_quantity || 0} बोरी</strong>
+              </p>
+              <p class="text-[10px] text-gray-400 mt-0.5">
+                पोस्टकर्ता: <strong class="text-gray-700">${r.submitted_by || r.firm_name || 'अज्ञात'}</strong> (${r.user_role || 'उपयोगकर्ता'})
+                ${r.quality_grade ? ` | मानक: ${r.quality_grade}` : ''}
+              </p>
+            </div>
+
+            <div class="flex items-center gap-2 self-end sm:self-auto">
+              <button onclick="openEditModal(${r.id})" class="bg-blue-50 text-blue-800 font-bold px-3 py-1.5 rounded-lg border border-blue-200 hover:bg-blue-100 transition">
+                ✏️ सुधारें
+              </button>
+              <button onclick="deleteRateRecord(${r.id})" class="bg-red-50 text-red-600 font-bold px-2.5 py-1.5 rounded-lg border border-red-200 hover:bg-red-100 transition">
+                🗑️
+              </button>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    // Modal Edit
+    function openEditModal(id) {
+      const r = allRates.find(x => x.id == id);
+      if (!r) return;
+      document.getElementById("modalRateId").value = r.id;
+      document.getElementById("modalCrop").value = r.crop_name;
+      document.getElementById("modalMandi").value = r.mandi_name;
+      document.getElementById("modalMin").value = r.price_min;
+      document.getElementById("modalModal").value = r.price_modal;
+      document.getElementById("modalMax").value = r.price_max;
+      document.getElementById("modalArrival").value = r.arrival_quantity || 0;
+      document.getElementById("modalDate").value = r.price_date;
+      document.getElementById("modalQuality").value = r.quality_grade || '';
+      document.getElementById("rateEditModal").classList.remove("hidden");
+    }
+
+    function closeEditModal() {
+      document.getElementById("rateEditModal").classList.add("hidden");
+    }
+
+    async function saveEditedRate(e) {
+      e.preventDefault();
+      const id = document.getElementById("modalRateId").value;
+      const min = document.getElementById("modalMin").value;
+      const modal = document.getElementById("modalModal").value;
+      const max = document.getElementById("modalMax").value;
+      const arr = document.getElementById("modalArrival").value || 0;
+      const dateVal = document.getElementById("modalDate").value;
+      const q = document.getElementById("modalQuality").value;
+
+      await sqlQuery(`
+        UPDATE price_records 
+        SET price_min = ${min}, price_modal = ${modal}, price_max = ${max}, 
+            arrival_quantity = ${arr}, price_date = '${dateVal}', quality_grade = '${q}'
+        WHERE id = ${id};
+      `);
+
+      alert("✅ भाव तुरंत सुधारा गया और अपडेट हो गया!");
+      closeEditModal();
+      loadRates();
+    }
+
+    async function deleteRateRecord(id) {
+      if (!confirm("क्या आप वाकई इस भाव को हटाना चाहते हैं?")) return;
+      await sqlQuery(`DELETE FROM price_records WHERE id = ${id};`);
+      loadRates();
+    }
+
+    // ================= 3. MASTER ENTRIES =================
+    async function addMandiSubmit(e) {
+      e.preventDefault();
+      const n = document.getElementById("newMandiName").value.trim();
+      const d = document.getElementById("newMandiDistrict").value.trim();
+      const s = document.getElementById("newMandiState").value;
+      await sqlQuery(`INSERT INTO mandis (name, district, state) VALUES ('${n}', '${d}', '${s}');`);
+      alert(`✅ मंडी '${n}' सफलतापूर्वक जुड़ गई!`);
+      e.target.reset();
+    }
+
+    async function addCropSubmit(e) {
+      e.preventDefault();
+      const n = document.getElementById("newCropName").value.trim();
+      const c = document.getElementById("newCropCategory").value;
+      await sqlQuery(`INSERT INTO commodities (name_hi, category) VALUES ('${n}', '${c}');`);
+      alert(`✅ फसल '${n}' जुड़ गई!`);
+      e.target.reset();
+    }
+  </script>
+</body>
+</html>
